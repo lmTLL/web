@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>学生面试题信息记录</title>
+    <link rel="stylesheet" href="layui/css/layui.css">
+
+    <style type="text/css">
+        .caller-seach{
+            position: relative;
+            padding-bottom: 40px;
+        }
+        .layadmin-caller .caller-seach .caller-icon{
+            font-size: 18px;
+            position: absolute;
+            top: 9px;
+        }
+        .layadmin-caller .caller-seach-icon {
+            left: 6px;
+        }
+
+    </style>
+</head>
+<body>
+
+<script type="application/javascript" src="layui/layui.js"></script>
+<script type="application/javascript" src="js/jquery-3.3.1.js"></script>
+    <div class="container">
+
+        <div class="layui-row">
+            <div class="layui-col-lg12" style="text-align: center;margin-top: 10px;padding: 10px">
+
+                <p style="font-size: 20px;" >
+                    <span style="border: 1px solid black;padding:6px;height: 38px;line-height: 38px">
+                         <label><i class="layui-icon layui-icon-search"></i></label>
+                        <input id="smsg" type="text" name="msg" placeholder="请输入名称或标题……" style="border: none;width: 400px;margin-left: 4px">
+                    </span>
+                    <button type="button" onclick="searchMsg()" class="layui-btn" ><i class="layui-icon layui-icon-search"></i> 搜索</button>
+                </p>
+
+            </div>
+        </div>
+        <div>
+
+            <table id="demo" lay-filter="test"></table>
+
+
+            <script type="text/html" id="toolbarDemo">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+                    <button class="layui-btn layui-btn-sm" lay-event="delete">删除</button>
+                    <button class="layui-btn layui-btn-sm" lay-event="update">编辑</button>
+                </div>
+            </script>
+        <script type="text/html" id="barDemo">
+            <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+            <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+
+
+        </script>
+        </div>
+        <script type="application/javascript">
+            var table,form,layer,tableIns;
+            layui.use(['table','layer','form'], function(){
+                 table = layui.table;
+                 form = layui.form;
+                 layer = layui.layer;
+                form.on('submit(formDemo)', function(data){
+
+                    $.ajax({
+                        url:"recodesave.do",
+                        method:"POST",
+                        data:$("#fm1").serialize(),
+                        success:function (obj) {
+                            if(obj.code==1){
+                                layer.msg("新增成功");
+                            }else{
+                                layer.msg("新增失败："+obj.code);
+                            }
+                        }
+                    });
+                    return false;
+                });
+
+                //第一个实例
+               tableIns = table.render({
+                    elem: '#demo'
+                    ,toolbar: '#toolbarDemo'
+                    ,height: 312
+                    ,url: '/demo/table/user/' //数据接口
+                    ,page: true //开启分页
+                    ,cols: [[ //表头
+                        {field: 'id', title: 'ID', width:80, sort: true, fixed: 'left'}
+                        ,{field: 'username', title: '用户名', width:80}
+                        ,{field: 'sex', title: '性别', width:80, sort: true}
+                        ,{field: 'city', title: '城市', width:80}
+                        ,{field: 'sign', title: '签名', width: 177}
+                        ,{field: 'experience', title: '积分', width: 80, sort: true}
+                        ,{field: 'score', title: '评分', width: 80, sort: true}
+                        ,{field: 'classify', title: '职业', width: 80}
+                        ,{field: 'wealth', title: '财富', width: 135, sort: true}
+                    ]]
+                });
+
+
+
+
+            //监听头部工具栏事件
+            table.on('toolbar(test)', function(obj){
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch(obj.event){
+            case 'add':
+            addShow();
+            break;
+            case 'delete':
+            deleteById();
+            break;
+            case 'update':
+            updateById();
+            break;
+            };
+            });
+
+
+
+            //监听工具条
+            table.on('tool(test)', function(obj){ //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+                var data = obj.data; //获得当前行数据
+                var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                var tr = obj.tr; //获得当前行 tr 的DOM对象
+
+                if(layEvent === 'detail'){ //查看
+                    //do somehing
+                } else if(layEvent === 'del'){ //删除
+                    layer.confirm('真的删除行么', function(index){
+                        obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                        layer.close(index);
+                        //向服务端发送删除指令
+                    });
+                } else if(layEvent === 'edit'){ //编辑
+
+
+                    obj.update({
+                        username: '123'
+                        ,title: 'xxx'
+                    });
+                }
+            });
+            });
+            function addShow() {
+                layer.open({
+                    type:1,
+                    content:$('#fm11'),
+                    title:'新增记录'
+                })
+            }
+
+            function deleteById(){
+                $.ajax({
+                    type:"POST",
+                    url:"deleteById.do",
+                    data:"",
+                    dataType:"json",
+                    success:function (obj) {
+
+                    }
+                })
+            }
+
+            function updateById(){
+                $.ajax({
+                    type:"POST",
+                    url:"updateById.do",
+                    data:"",
+                    dataType:"json",
+                    success:function (obj) {
+
+                    }
+                })
+            }
+
+            function searchMsg() {
+                tableIns.reload({
+                    url: 'recodepagelike.do'
+                    , where: {msg: $("#smsg").val()}
+                    , page: {
+                        curr: 1 //重新从第 1 页开始
+                    }//
+                });
+            }
+
+            </script>
+
+
+
+    </div>
+</body>
+</html>

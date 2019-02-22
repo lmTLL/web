@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>学员面试题记录</title>
+    <link rel="stylesheet" href="layui/css/layui.css">
+    <style type="text/css">
+        .caller-search{
+            position:relative;
+            padding-bottom: 40px;
+        }
+        .layadmin-caller .caller-seach .caller-icon{
+            font-size: 18px;
+            position: absolute;
+            top: 9px;
+        }
+
+        .layadmin-caller .caller-seach-icon {
+            left: 6px;
+        }
+    </style>
+
+</head>
+<body>
+    <script type="application/javascript" src="layui/layui.js"></script>
+    <script type="application/javascript" src="js/jquery-3.3.1.js"></script>
+
+    <div class="container">
+        <!--1、搜索框-->
+        <div class="layui-row">
+            <div class="layui-col-lg12" style="text-align: center;margin-top: 10px;padding: 10px">
+
+                <p style="font-size: 20px;" >
+                    <span style="border: 1px solid black;padding:6px;height: 38px;line-height: 38px">
+                         <label><i class="layui-icon layui-icon-search"></i></label>
+                        <input id="smsg" type="text" name="msg" placeholder="请输入名称或标题……" style="border: none;width: 400px;margin-left: 4px">
+                    </span>
+                    <button type="button" onclick="searchMsg()" class="layui-btn" ><i class="layui-icon layui-icon-search"></i> 搜索</button>
+                </p>
+
+            </div>
+
+        </div>
+
+        <div>
+        <table id="demo" lay-filter="test"></table>
+        <script type="text/html" id="toolbarDemo">
+
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+            </div>
+        </script>
+
+            <script type="text/html" id="barDemo">
+                <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+                <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+
+            </script>
+        </div>
+
+
+
+        <script type="application/javascript">
+
+            var layer,form,table,tableIns;
+
+            layui.use(['table','layer','form'], function() {
+                table = layui.table;
+                layer = layui.layer;
+                form = layui.form;
+
+                form.on('submit(formDemo)', function (data) {
+                    // layer.msg($("#fm1").serialize());
+                    $.ajax({
+                        url: "recodesave.do",
+                        method: "POST",
+                        data: $("#fm1").serialize(),
+                        success: function (obj) {
+                            if (obj.code == 1) {
+                                layer.msg("新增成功");
+                            } else {
+                                layer.msg("新增失败：" + obj.code);
+                            }
+                        }
+                    });
+                    return false;
+                });
+
+                    //第一个实例
+                    table.render({
+                        elem: '#demo'
+                        , height: 'full-20'
+                        , toolbar: "#toolbarDemo"
+                        , url: '/demo/table/user/' //数据接口
+                        , page: true //开启分页
+                        , cols: [[ //表头
+                            {field: 'id', title: '序号', sort: true, fixed: 'left'}
+                            , {field: 'classname', title: '班级'}
+                            , {field: 'name', title: '姓名'}
+                            , {field: 'title', title: '面试题'}
+                            , {field: 'res', title: '熟练程度'}
+                            , {field: 'createtime', title: '创建时间', sort: true}
+                            , {field: 'right', title: '操作', width: 80}
+
+                        ]]
+                    });
+
+
+
+
+                //监听头部工具栏事件
+                table.on('toolbar(test)', function (obj) {
+                    var checkStatus = table.checkStatus(obj.config.id);
+                    switch (obj.event) {
+                        case 'add':
+                            addShow();
+                            break;
+                    };
+                });
+
+
+                //监听工具条
+                table.on('tool(test)', function (obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+                    var data = obj.data; //获得当前行数据
+                    var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                    var tr = obj.tr; //获得当前行 tr 的DOM对象
+
+                    if (layEvent === 'detail') { //查看
+                        //do somehing
+                    } else if (layEvent === 'del') { //删除
+                        layer.confirm('真的删除行么', function (index) {
+                            obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                            layer.close(index);
+                            //向服务端发送删除指令
+                        });
+                    } else if (layEvent === 'edit') { //编辑
+                        //do something
+
+                        //同步更新缓存对应的值
+                        obj.update({
+                            username: '123'
+                            , title: 'xxx'
+                        });
+                    }
+                });
+            });
+
+                function addShow() {
+                    layer.open({
+                        type: 1,
+                        content: $("#fm1"),
+                        area: ['530px', '350px'],
+                        title: '新增记录'
+                    })
+                }
+
+                //搜索框
+                function searchMsg() {
+                    tableIns.reload({
+                        url: 'recodepagelike.do'
+                        , where: {msg: $("#smsg").val()}
+                        , page: {
+                            curr: 1 //重新从第 1 页开始
+                        }//设定异步数据接口的额外参数
+                    });
+                }
+
+
+        </script>
+
+
+    </div>
+
+
+
+</body>
+</html>
+
+<div id="fm1" style="display: none">
+    <table class="layui-table" lay-data="{height:315, url:'', page:true, id:'test'}" lay-filter="test" >
+        <thead>
+        <tr>
+            <th lay-data="{field:'id', width:80, sort: true}">ID</th>
+            <th lay-data="{field:'username', width:80}">用户名</th>
+            <th lay-data="{field:'sex', width:80, sort: true}">性别</th>
+            <th lay-data="{field:'city'}">城市</th>
+            <th lay-data="{field:'sign'}">签名</th>
+
+        </tr>
+        </thead>
+    </table>
+</div>
